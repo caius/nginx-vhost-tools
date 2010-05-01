@@ -1,0 +1,26 @@
+#!/usr/bin/env zsh
+#
+# Disables vhosts for nginx
+# Created by Caius Durling on 10-05-01
+#
+if [[ -z "$1" ]]; then
+  echo "Usage: ngen <site>"
+  echo "Disables nginx vhosts"
+  echo "NB: Remember to reload nginx after running"
+  exit 1
+fi
+
+SITES_AVAILABLE="/etc/nginx/sites-available"
+SITES_ENABLED="/etc/nginx/sites-enabled"
+
+FILE="$SITES_ENABLED/$1"
+echo "$FILE"
+
+if [[ ! -L "$FILE" ]]; then
+  echo "$1 isn't enabled"
+  exit 0
+fi
+
+sudo rm "$FILE"
+echo "Disabled '$1'"
+
