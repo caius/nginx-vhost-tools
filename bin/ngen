@@ -3,6 +3,11 @@
 # Enables vhosts for nginx
 # Created by Caius Durling on 10-05-01  
 #
+# Exit codes:
+#  0 - Created symlink
+#  1 - Error running script - No arguments passed or couldn't find config file
+#  2 - Site is already enabled
+#
 if [[ -z "$1" ]]; then
   echo "Usage: ngen <site>"
   echo "Enables nginx vhosts"
@@ -18,9 +23,11 @@ echo "$FILE"
 
 if [[ -L "$FILE" ]]; then
   echo "$1 is already enabled"
-  exit 0
+  exit 2
+elif [[ ! -e "$SITES_AVAILABLE/$1" ]]; then
+  echo "Can't find the config for $1."
+  exit 1
 fi
 
 sudo ln -s "$SITES_AVAILABLE/$1" "$FILE"
 echo "Enabled '$1'"
-
