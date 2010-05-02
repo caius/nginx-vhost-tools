@@ -3,6 +3,11 @@
 # Disables vhosts for nginx
 # Created by Caius Durling on 10-05-01
 #
+# Exit codes:
+#  0 - Removed symlink
+#  1 - Error running script - No arguments passed
+#  2 - Site is already disabled
+#
 if [[ -z "$1" ]]; then
   echo "Usage: ngen <site>"
   echo "Disables nginx vhosts"
@@ -18,7 +23,7 @@ echo "$FILE"
 
 if [[ ! -L "$FILE" ]]; then
   echo "$1 isn't enabled"
-  exit 0
+  exit 2
 fi
 
 sudo rm "$FILE"
