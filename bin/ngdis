@@ -1,7 +1,9 @@
 #!/usr/bin/env zsh
 #
 # Disables vhosts for nginx
+# 
 # Created by Caius Durling on 10-05-01
+# MIT License - see readme.md
 #
 # Exit codes:
 #  0 - Removed symlink
