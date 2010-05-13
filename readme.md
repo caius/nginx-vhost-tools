@@ -19,6 +19,24 @@ Enables or Disables virtual hosts.
 	Enabled 'caius.name'
 
 
+### `ngnew`
+
+Generates and saves a new nginx config for a domain name.
+
+	$ ./bin/ngnew --help
+	USAGE: ngnew [options]
+
+	Specific options:
+	    -n, --name NAME                  Domain name
+	    -u, --user [USER]                Username where webroot resides
+	    -t, --template [FILE]            File to read template config from
+	    -f, --file [FILE]                File to write config into
+	        --enable-php                 Enable PHP in the vhost
+
+use `%USER%`, `%NAME%` and `%PHP_CONFIG%` as variables in your template file. `%PHP_CONFIG%` is hardcoded to just `include php_config;`, so put your generic php config in `/etc/nginx/php_config` for it to be included.
+
+Defaults to reading template file from `/etx/nginx/template`, writing config file to `/etc/nginx/sites-available/$NAME` and the shell user running the script.
+
 ## License
 
 Copyright (c) 2010 Caius Durling <dev@caius.name>
