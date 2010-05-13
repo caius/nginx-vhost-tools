@@ -7,7 +7,13 @@
 # 
 # Created by Caius Durling on 2010-05-12
 # MIT License - see readme.md
-#
+# 
+# Exit codes:
+#   0: everything went ok
+#   1: --name argument missing
+#   2: config file already exists
+#   3: template file not found
+# 
 
 require "optparse"
 require "ostruct"
@@ -19,8 +25,9 @@ PHP_CONFIG = "include php_config;"
 
 # Set the defaults here
 @opts.template_path = "#{DEFAULT_NGINX_ROOT}/template"
-@opts.user = ENV["USER"]
-@opts.enable_php = false
+@opts.user          = ENV["USER"]
+@opts.enable_php    = false
+@opts.overwrite     = false
 
 OptionParser.new do |o|
   o.banner = "USAGE: ngnew [options]"
@@ -48,6 +55,10 @@ OptionParser.new do |o|
     @opts.enable_php = true
   end
 
+  o.on("--force", "Overwrite existing config file") do |force|
+    @opts.overwrite = true
+  end
+
 end.parse!(ARGV)
 
 unless @opts.name
@@ -59,7 +70,18 @@ end
 # And now we work some stuff out with the options we've been given
 @opts.config_path ||= "#{DEFAULT_NGINX_ROOT}/sites-available/#{@opts.name}"
 
-# p @opts
+template_file = File.expand_path(@opts.template_path)
+unless File.exists?(template_file)
+  puts "ERROR: Can't find the template file: #{template_file}"
+  exit 3
+end
+
+config_file = File.expand_path(@opts.config_path)
+if File.exists?(config_file) && !@opts.overwrite
+  puts "ERROR: #{config_file} already exists."
+  puts "Pass --force to overwrite it."
+  exit 2
+end
 
 File.open(File.expand_path(@opts.config_path), "w") do |f|
   # Read in template file
@@ -76,3 +98,5 @@ File.open(File.expand_path(@opts.config_path), "w") do |f|
     f.puts line
   end
 end
+
+puts "Wrote the config for #{@opts.name} to #{config_file} successfully!"
