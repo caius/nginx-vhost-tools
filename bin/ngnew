@@ -1,0 +1,78 @@
+#!/usr/bin/env ruby
+#
+# Creates a new site config for nginx
+# 
+# Uses a template file to create the config, and fills in 
+# "variables" with commmand line arguments to this script.
+# 
+# Created by Caius Durling on 2010-05-12
+# MIT License - see readme.md
+#
+
+require "optparse"
+require "ostruct"
+
+DEFAULT_NGINX_ROOT = "/etc/nginx"
+PHP_CONFIG = "include php_config;"
+
+@opts = OpenStruct.new
+
+# Set the defaults here
+@opts.template_path = "#{DEFAULT_NGINX_ROOT}/template"
+@opts.user = ENV["USER"]
+@opts.enable_php = false
+
+OptionParser.new do |o|
+  o.banner = "USAGE: ngnew [options]"
+  
+  o.separator ""
+  o.separator "Specific options:"
+
+  o.on("-n", "--name NAME", "Domain name") do |name|
+    @opts.name = name
+  end
+
+  o.on("-u", "--user [USER]", "Username where webroot resides") do |user|
+    @opts.user = user
+  end
+
+  o.on("-t", "--template [FILE]", "File to read template config from") do |template|
+    @opts.template_path = template
+  end
+
+  o.on("-f", "--file [FILE]", "File to write config into") do |config_file|
+    @opts.config_path = config_file
+  end
+
+  o.on("--enable-php", "Enable PHP in the vhost") do |php|
+    @opts.enable_php = true
+  end
+
+end.parse!(ARGV)
+
+unless @opts.name
+  puts "Required domain name is missing!"
+  puts "See --help for usage"
+  exit 1
+end
+
+# And now we work some stuff out with the options we've been given
+@opts.config_path ||= "#{DEFAULT_NGINX_ROOT}/sites-available/#{@opts.name}"
+
+# p @opts
+
+File.open(File.expand_path(@opts.config_path), "w") do |f|
+  # Read in template file
+  File.open(File.expand_path(@opts.template_path), "r").each_line do |line|
+    line ||= ""
+    # Replace the variables we can
+    line.gsub!("%USER%", @opts.user)
+    line.gsub!("%NAME%", @opts.name)
+    # Either strip our php variable, or fill it if we're enabling php
+    next if line[/%PHP_CONFIG%/] && !@opts.enable_php
+    line.gsub!("%PHP_CONFIG%", PHP_CONFIG)
+
+    # Write file out to config
+    f.puts line
+  end
+end
